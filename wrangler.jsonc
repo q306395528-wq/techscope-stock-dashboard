@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "techscope-stock-dashboard",
-  "main": "./src/worker.js",
+  "main": "./src/entry.js",
   "compatibility_date": "2026-08-05",
   "assets": {
     "directory": "./public",
