@@ -1,0 +1,47 @@
+name: Restore TechScope V4 source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/bootstrap-v4.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/chunk* > /tmp/techscope-v4.tar.gz.b64
+          base64 --decode /tmp/techscope-v4.tar.gz.b64 > /tmp/techscope-v4.tar.gz
+          tar -xzf /tmp/techscope-v4.tar.gz -C .
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap-v4.yml
+
+      - name: Verify restored source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check src/worker.js
+          node --check public/app.js
+          node --test
+
+      - name: Commit complete V4 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Import complete TechScope V4 source'
+          git push origin HEAD:main
