@@ -1,0 +1,3 @@
+TIINGO_API_TOKEN=replace_with_your_tiingo_token
+# Optional. When set, all /api/* requests require this value in x-techscope-key.
+# APP_ACCESS_TOKEN=replace_with_a_private_access_token

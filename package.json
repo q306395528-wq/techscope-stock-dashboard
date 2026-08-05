@@ -1,0 +1,19 @@
+{
+  "name": "techscope-cloudflare-r2",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Workers + R2 TechScope stock history dashboard with PWA, watchlist and incremental Tiingo sync.",
+  "scripts": {
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "test": "node --test",
+    "check": "node --check src/worker.js && node --check public/app.js && node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

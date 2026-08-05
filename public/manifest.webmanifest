@@ -1,0 +1,19 @@
+{
+  "name": "TechScope 美股历史分析",
+  "short_name": "TechScope",
+  "description": "个人美股科技股历史价格、回撤与相对收益分析仪表盘。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080b13",
+  "theme_color": "#080b13",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
