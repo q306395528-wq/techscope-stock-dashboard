@@ -1,7 +1,10 @@
 'use strict';
 
-const CACHE = 'techscope-static-v4';
-const STATIC_ASSETS = ['/', '/index.html', '/styles.css', '/app.js', '/manifest.webmanifest', '/icon.svg'];
+const CACHE = 'techscope-static-v4.0.1';
+const STATIC_ASSETS = [
+  '/', '/index.html', '/styles.css', '/app.js', '/app-core.js', '/app-data.js', '/app-charts.js',
+  '/manifest.webmanifest', '/icon.svg'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting()));
