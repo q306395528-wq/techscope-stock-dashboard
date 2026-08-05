@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b13" />
+  <meta name="description" content="个人美股科技股历史价格、回撤与相对收益分析仪表盘。" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TechScope" />
+  <title>TechScope · 美股科技股历史分析</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-row">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <div>
+            <strong>TechScope</strong>
+            <span>美股历史分析</span>
+          </div>
+        </div>
+        <button class="icon-button sidebar-close" id="sidebarClose" aria-label="关闭自选股栏">×</button>
+      </div>
+
+      <button class="cloud-button" id="apiButton">
+        <span class="status-dot" id="apiStatusDot"></span>
+        <span id="apiButtonText">检查云端连接</span>
+        <span class="cloud-chevron">›</span>
+      </button>
+
+      <div class="side-section watchlist-section">
+        <div class="section-heading">
+          <span class="section-label">我的自选</span>
+          <span class="count-badge" id="watchlistCount">0</span>
+        </div>
+        <div class="ticker-list" id="tickerList"></div>
+      </div>
+
+      <div class="side-section add-section">
+        <div class="section-label">添加股票</div>
+        <form id="customTickerForm" class="custom-ticker-form">
+          <input id="customTickerInput" maxlength="12" placeholder="例如 CRDO" autocomplete="off" aria-label="股票代码" />
+          <button type="submit" title="添加到自选">＋</button>
+        </form>
+      </div>
+
+      <div class="sidebar-footer">
+        <span id="localStoreStatus">R2 云端仓库：等待读取</span>
+        <span>数据来源：Tiingo EOD</span>
+        <span>仅供研究，不构成投资建议</span>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+    <main class="main-content">
+      <header class="mobile-header">
+        <button class="icon-button" id="sidebarOpen" aria-label="打开自选股栏">☰</button>
+        <strong>TechScope</strong>
+        <button class="icon-button" id="mobileRefresh" aria-label="更新数据">↻</button>
+      </header>
+
+      <header class="topbar">
+        <div class="symbol-heading">
+          <div class="symbol-copy">
+            <div class="eyebrow" id="companyName">Tesla, Inc.</div>
+            <div class="symbol-title-row">
+              <h1><span id="symbolTitle">TSLA</span><span class="exchange" id="exchangeName">NASDAQ</span></h1>
+              <button class="watch-toggle" id="watchToggleButton" title="加入或移出自选" aria-label="加入或移出自选">★</button>
+            </div>
+          </div>
+          <div class="price-block">
+            <strong id="latestPrice">—</strong>
+            <span id="periodChange">等待查询</span>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="range-scroll">
+            <div class="range-group" id="rangeGroup">
+              <button data-range="1M">1月</button>
+              <button data-range="3M">3月</button>
+              <button data-range="6M">6月</button>
+              <button data-range="1Y">1年</button>
+              <button data-range="3Y">3年</button>
+              <button data-range="5Y" class="active">5年</button>
+              <button data-range="10Y">10年</button>
+              <button data-range="MAX">全部</button>
+            </div>
+          </div>
+          <div class="date-group">
+            <input type="date" id="startDate" aria-label="开始日期" />
+            <span>至</span>
+            <input type="date" id="endDate" aria-label="结束日期" />
+            <button id="queryButton" class="primary-button compact">查询</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">☁</div>
+        <h2>云端服务尚未配置完成</h2>
+        <p>需要在 Cloudflare Worker 中绑定 R2，并把 Tiingo API Key 保存为加密 Secret。</p>
+        <button class="primary-button" id="emptyApiButton">查看部署状态</button>
+      </section>
+
+      <section id="dashboard" class="dashboard">
+        <div class="metric-grid" id="metricGrid">
+          <article class="metric-card"><span>区间收益</span><strong id="metricReturn">—</strong><small id="metricReturnSub">—</small></article>
+          <article class="metric-card"><span>年化收益</span><strong id="metricCagr">—</strong><small>按复权收盘价计算</small></article>
+          <article class="metric-card"><span>最大回撤</span><strong id="metricDrawdown">—</strong><small id="metricDrawdownSub">—</small></article>
+          <article class="metric-card"><span>当前回撤</span><strong id="metricCurrentDrawdown">—</strong><small>相对区间历史高点</small></article>
+          <article class="metric-card"><span>年化波动率</span><strong id="metricVolatility">—</strong><small>日收益率 × √252</small></article>
+          <article class="metric-card"><span>52周距高点</span><strong id="metric52Week">—</strong><small id="metric52WeekSub">—</small></article>
+          <article class="metric-card"><span>区间最高</span><strong id="metricHigh">—</strong><small id="metricHighSub">—</small></article>
+          <article class="metric-card"><span>区间最低</span><strong id="metricLow">—</strong><small id="metricLowSub">—</small></article>
+        </div>
+
+        <section class="panel chart-panel" id="chartPanel">
+          <div class="panel-header chart-panel-header">
+            <div class="panel-title-wrap">
+              <h2>价格走势</h2>
+              <p id="chartCaption">复权价格 · 日线</p>
+            </div>
+            <div class="chart-controls">
+              <label><input type="checkbox" id="volumeToggle" checked /> 成交量</label>
+              <label><input type="checkbox" id="logToggle" /> 对数</label>
+              <label><input type="checkbox" id="ma50Toggle" checked /> MA50</label>
+              <label><input type="checkbox" id="ma200Toggle" /> MA200</label>
+              <div class="segmented">
+                <button id="lineMode" class="active">折线</button>
+                <button id="candleMode">K线</button>
+              </div>
+              <button class="ghost-button compact-control" id="fullscreenButton">全屏</button>
+              <button class="ghost-button compact-control" id="refreshButton">更新</button>
+              <button class="ghost-button compact-control" id="exportButton">CSV</button>
+            </div>
+          </div>
+          <div class="data-status" id="dataStatus">
+            <span class="status-pill" id="sourceBadge">等待数据</span>
+            <span class="status-pill" id="apiBadge">API 0次</span>
+            <span class="status-pill" id="rowsBadge">本地 0条</span>
+            <span class="status-pill" id="updatedBadge">尚未更新</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="priceChart"></canvas>
+            <div class="chart-tooltip hidden" id="priceTooltip"></div>
+            <div class="chart-loading hidden" id="chartLoading"><div class="spinner"></div><span>正在获取历史数据…</span></div>
+          </div>
+        </section>
+
+        <div class="analysis-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div><h2>年度收益</h2><p>每年最后一个交易日对比</p></div>
+            </div>
+            <div id="annualReturns" class="annual-returns"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div><h2>回撤曲线</h2><p>相对此前历史高点</p></div>
+            </div>
+            <div class="mini-chart-wrap"><canvas id="drawdownChart"></canvas></div>
+          </section>
+        </div>
+
+        <section class="panel comparison-panel">
+          <div class="panel-header comparison-header">
+            <div><h2>相对收益对比</h2><p>起始点统一为100；只有点击比较时才会请求其他股票</p></div>
+            <form id="compareForm" class="compare-form">
+              <input id="compareInput" value="QQQ" placeholder="QQQ,SPY,NVDA" aria-label="对比股票代码" />
+              <button class="primary-button compact" type="submit">开始比较</button>
+            </form>
+          </div>
+          <div class="benchmark-row">
+            <span>快速基准</span>
+            <button data-benchmark="QQQ">纳指100 QQQ</button>
+            <button data-benchmark="SPY">标普500 SPY</button>
+            <button data-benchmark="SOXX">半导体 SOXX</button>
+            <button data-benchmark="QQQ,SPY">QQQ + SPY</button>
+          </div>
+          <div class="comparison-legend" id="comparisonLegend"></div>
+          <div class="compare-chart-wrap">
+            <canvas id="compareChart"></canvas>
+            <div class="compare-empty" id="compareEmpty">
+              <strong>暂未加载对比数据</strong>
+              <span>选择一个基准再点击“开始比较”，可避免不必要的 Tiingo 请求。</span>
+            </div>
+            <div class="chart-loading hidden" id="compareLoading"><div class="spinner"></div><span>正在读取对比数据…</span></div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="apiModal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose" aria-label="关闭">×</button>
+      <div class="modal-icon">☁</div>
+      <h2>Cloudflare 部署状态</h2>
+      <p>Tiingo API Key 保存在 Cloudflare Worker Secret 中，浏览器和 GitHub 都看不到密钥。</p>
+      <div class="deployment-status">
+        <div><span>应用版本</span><strong id="appVersionStatus">—</strong></div>
+        <div><span>Tiingo Secret</span><strong id="tiingoSecretStatus">检查中…</strong></div>
+        <div><span>R2 数据仓库</span><strong id="r2Status">检查中…</strong></div>
+        <div><span>每日自动更新</span><strong id="cronStatus">等待读取</strong></div>
+        <div><span>API访问保护</span><strong id="accessStatus">未启用</strong></div>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost-button" id="testCloudButton">重新检查</button>
+        <button class="primary-button" id="closeStatusButton">完成</button>
+      </div>
+      <div class="modal-message" id="apiMessage"></div>
+      <p class="modal-help">要保护公开网址，可在 Cloudflare 中设置 <code>APP_ACCESS_TOKEN</code> Secret；网站会要求输入访问口令。</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="accessModal">
+    <div class="modal-card access-card">
+      <div class="modal-icon">⌁</div>
+      <h2>请输入访问口令</h2>
+      <p>此站点的股票API已启用私人访问保护。口令仅保存在当前浏览器。</p>
+      <form id="accessForm" class="access-form">
+        <input type="password" id="accessTokenInput" autocomplete="current-password" placeholder="访问口令" />
+        <button class="primary-button" type="submit">进入 TechScope</button>
+      </form>
+      <div class="modal-message negative" id="accessMessage"></div>
+    </div>
+  </div>
+
+  <button class="install-fab hidden" id="installButton">安装到桌面</button>
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
