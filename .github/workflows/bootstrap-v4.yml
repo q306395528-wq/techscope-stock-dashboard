@@ -1,6 +1,7 @@
 name: Restore TechScope V4 source
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
