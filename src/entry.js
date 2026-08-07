@@ -17,7 +17,7 @@ export default {
       const response=await worker.fetch(request,env,ctx);
       if(!response.ok)return response;
       const data=await response.json();
-      return new Response(JSON.stringify({...data,version:'4.2.0'}),{status:200,headers:response.headers});
+      return new Response(JSON.stringify({...data,version:'4.3.0'}),{status:200,headers:response.headers});
     }
     return worker.fetch(request,env,ctx);
   },
