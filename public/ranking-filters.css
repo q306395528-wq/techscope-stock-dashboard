@@ -1,0 +1,28 @@
+.ranking-filter {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ranking-filter::-webkit-scrollbar { display: none; }
+.ranking-filter button {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  color: #7c869a;
+  background: rgba(255,255,255,.025);
+  font-size: 8px;
+  white-space: nowrap;
+}
+.ranking-filter button:hover { color: #d9deea; background: rgba(255,255,255,.055); }
+.ranking-filter button.active {
+  color: #fff;
+  border-color: rgba(124,108,255,.25);
+  background: rgba(124,108,255,.15);
+}
+@media (max-width:620px) {
+  .ranking-filter { padding-inline: 11px; }
+}
