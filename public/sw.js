@@ -1,8 +1,9 @@
 'use strict';
 
-const CACHE = 'techscope-static-v4.4';
+const CACHE = 'techscope-static-v4.4.1';
 const STATIC_ASSETS = [
-  '/', '/index.html', '/styles.css', '/home.css', '/ranking-filters.css', '/sidebar-quotes.css', '/app.js', '/prelude.js', '/app-home.js', '/ranking-filters.js', '/sidebar-quotes.js', '/app-core.js', '/app-data.js', '/app-charts.js',
+  '/', '/index.html', '/styles.css', '/home.css', '/ranking-filters.css', '/sidebar-quotes.css',
+  '/prelude.js', '/app-core.js', '/app-data.js', '/app-home.js', '/ranking-filters.js', '/sidebar-quotes.js', '/app-charts.js',
   '/manifest.webmanifest', '/icon.svg'
 ];
 
@@ -18,12 +19,15 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
-  if (event.request.mode === 'navigate') {
+  const networkFirst = event.request.mode === 'navigate' || /\.(?:js|css)$/.test(url.pathname);
+  if (networkFirst) {
     event.respondWith(fetch(event.request).then((response) => {
-      const copy = response.clone();
-      caches.open(CACHE).then((cache) => cache.put('/index.html', copy));
+      if (response.ok) caches.open(CACHE).then((cache) => cache.put(event.request, response.clone()));
       return response;
-    }).catch(() => caches.match('/index.html')));
+    }).catch(async () => {
+      if (event.request.mode === 'navigate') return (await caches.match('/index.html')) || Response.error();
+      return (await caches.match(event.request)) || (await caches.match(url.pathname)) || Response.error();
+    }));
     return;
   }
 
