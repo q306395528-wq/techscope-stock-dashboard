@@ -11,10 +11,16 @@ class MemoryR2 {
 test('overview reads R2 only and reports pending symbols',async()=>{
   const bucket=new MemoryR2();
   await bucket.put('config/watchlist.json',JSON.stringify({symbols:['TSLA','NVDA']}));
-  await bucket.put('prices/TSLA/manifest.json',JSON.stringify({years:{'2026':{rows:3}},lastSyncAt:'2026-08-05T00:00:00Z'}));
+  await bucket.put('prices/TSLA/manifest.json',JSON.stringify({years:{'2025':{rows:2},'2026':{rows:5}},lastSyncAt:'2026-08-05T00:00:00Z'}));
+  await bucket.put('prices/TSLA/2025.json',JSON.stringify([
+    {date:'2025-08-04',adjClose:80,adjHigh:82},
+    {date:'2025-12-31',adjClose:90,adjHigh:92}
+  ]));
   await bucket.put('prices/TSLA/2026.json',JSON.stringify([
-    {date:'2026-07-01',adjClose:100,adjHigh:102},
-    {date:'2026-08-03',adjClose:110,adjHigh:112},
+    {date:'2026-04-30',adjClose:95,adjHigh:97},
+    {date:'2026-06-30',adjClose:100,adjHigh:102},
+    {date:'2026-07-31',adjClose:110,adjHigh:112},
+    {date:'2026-08-03',adjClose:115,adjHigh:116},
     {date:'2026-08-04',adjClose:121,adjHigh:122}
   ]));
   await bucket.put('meta/TSLA.json',JSON.stringify({data:{name:'Tesla, Inc.'}}));
@@ -26,5 +32,10 @@ test('overview reads R2 only and reports pending symbols',async()=>{
   assert.equal(data.summary.pending,1);
   assert.equal(data.items[0].name,'Tesla, Inc.');
   assert.ok(data.items[0].change1d>0);
+  assert.ok(Number.isFinite(data.items[0].changeMtd));
+  assert.ok(Number.isFinite(data.items[0].change1m));
+  assert.ok(Number.isFinite(data.items[0].change3m));
+  assert.ok(Number.isFinite(data.items[0].changeYtd));
+  assert.ok(Number.isFinite(data.items[0].change1y));
   assert.equal(data.items[1].initialized,false);
 });
