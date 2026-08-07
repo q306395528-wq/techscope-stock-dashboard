@@ -1,8 +1,8 @@
 'use strict';
 
-const CACHE = 'techscope-static-v4.3';
+const CACHE = 'techscope-static-v4.4';
 const STATIC_ASSETS = [
-  '/', '/index.html', '/styles.css', '/home.css', '/sidebar-quotes.css', '/app.js', '/prelude.js', '/app-home.js', '/sidebar-quotes.js', '/app-core.js', '/app-data.js', '/app-charts.js',
+  '/', '/index.html', '/styles.css', '/home.css', '/ranking-filters.css', '/sidebar-quotes.css', '/app.js', '/prelude.js', '/app-home.js', '/ranking-filters.js', '/sidebar-quotes.js', '/app-core.js', '/app-data.js', '/app-charts.js',
   '/manifest.webmanifest', '/icon.svg'
 ];
 
